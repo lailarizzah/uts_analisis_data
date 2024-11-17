@@ -1,0 +1,134 @@
+#Laila Rohmatul I'zzah
+#22106010007
+#UTS ANALISIS DATA 
+
+#NOMOR 2
+#read your data
+getwd()
+setwd("D:/ANDAT")
+perusahaan <- read.csv("dataperusahaan.csv", sep = ";", header=TRUE)
+perusahaan
+
+names(perusahaan) <- make.names(names(perusahaan))
+head(perusahaan)
+
+#check the packaging
+nrow(perusahaan)
+ncol(perusahaan)
+str(perusahaan)
+
+#look at the top and the bottom of your data
+head(perusahaan[, c(6, 2)])
+tail(perusahaan[, c(6, 2)])
+
+#Check your “n”s
+head(table(perusahaan$time.spend.company))
+table(perusahaan$time.spend.company)
+
+library(dplyr)
+# Menyaring perusahaan dengan waktu kerja >= 3 
+result1 <- filter(perusahaan, time.spend.company >= 3) %>%
+  select(satisfaction.level)
+print(head(result1, 10))
+
+# Menyaring perusahaan dengan satisfaction.level >= 0.8 
+result2 <- filter(perusahaan, satisfaction.level >= 0.8) %>%
+  select(time.spend.company) %>%
+  as.data.frame
+print(head(result2, 10))  
+  
+select(perusahaan, satisfaction.level) %>% unique %>% nrow
+unique(na.omit(perusahaan$satisfaction.level))
+
+#Validate with at least one external data source
+summary(na.omit(perusahaan$satisfaction.level))
+# Menghitung kuantil satisfaction level pada setiap 10%
+quantile(perusahaan$satisfaction.level, seq(0, 1, 0.1), na.rm = TRUE)
+
+#Make a plot (gunakan package ggplot2)
+library(ggplot2)
+data_bersih <- na.omit(perusahaan)
+
+#Membuat boxplot dengan data yang sudah bersih
+ggplot(data_bersih, aes(x = time.spend.company, y = satisfaction.level)) +
+  geom_boxplot()
+
+#Try the easy solution first
+perusahaan$lama_kerja <- ifelse(perusahaan$time.spend.company >= 3, ">= 3 Tahun", "< 3 Tahun")
+perusahaan$lama_kerja
+
+library(dplyr)
+perusahaan %>%
+  group_by(lama_kerja) %>%
+  summarize(
+    mean_satisfaction = mean(satisfaction.level, na.rm = TRUE),
+    median_satisfaction = median(satisfaction.level, na.rm = TRUE),
+    jumlah_karyawan = n()
+  )
+
+boxplot(satisfaction.level ~ lama_kerja, perusahaan, range = 0)
+
+#challenge your data
+filter(perusahaan, time.spend.company < 3 ) %>%
+  summarize(
+    mean_satisfaction = mean(satisfaction.level, na.rm = TRUE),
+    median_satisfaction = median(satisfaction.level, na.rm = TRUE),
+    jumlah_karyawan = n()
+  )
+
+filter(perusahaan, time.spend.company >= 3 ) %>%
+  summarize(
+    mean_satisfaction = mean(satisfaction.level, na.rm = TRUE),
+    median_satisfaction = median(satisfaction.level, na.rm = TRUE),
+    jumlah_karyawan = n()
+  )
+
+
+
+#NOMOR 3
+#model as expectation
+# Menghitung mean dan standard deviation untuk variabel time.spend.company
+mean_time <- mean(perusahaan$time.spend.company, na.rm = TRUE)
+mean_time
+sd_time <- sd(perusahaan$time.spend.company, na.rm = TRUE)
+sd_time
+
+# Membuat kurva distribusi normal
+curve(dnorm(x, mean = mean_time, sd = sd_time), 
+      from = min(perusahaan$time.spend.company, na.rm = TRUE), 
+      to = max(perusahaan$time.spend.company, na.rm = TRUE), 
+      xlab = "Time Spend (Years)", 
+      ylab = "Density", 
+      main = "Normal Model untuk Time Spend Company", 
+      col = "blue", 
+      lwd = 2)
+
+#Comparing Model Expectations to Reality
+#histogram variabel dependen (satisfaction.level)
+hist(perusahaan$satisfaction.level, 
+     probability = TRUE, 
+     main = "Histogram Tingkat Kepuasan Kerja", 
+     xlab = "Tingkat Kepuasan Kerja", 
+     col = "lightblue", 
+     border = "black")
+
+#histogram berdistribusi normal
+curve(dnorm(x, mean = mean(perusahaan$satisfaction.level, na.rm = TRUE), 
+            sd = sd(perusahaan$satisfaction.level, na.rm = TRUE)), 
+      add = TRUE, col = "blue", lwd = 2)
+
+abline(v = mean(perusahaan$satisfaction.level, na.rm = TRUE), col = "red", lwd = 2)
+
+
+#Reacting to Data
+#Regresi Linear Sederhana
+y=data1$satisfaction.level
+x=data1$time.spend.company
+
+#Model Regression
+model=lm(y~x, data=data1)
+model
+summary(model)
+
+#Anova
+anova(model)
